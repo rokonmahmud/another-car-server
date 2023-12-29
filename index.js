@@ -33,7 +33,7 @@ async function run() {
     await client.connect();
 
     const carCollection = client.db('carDB').collection('cars');
-
+    
     app.get('/cars', async(req, res)=>{
       const cursor = carCollection.find();
       const result = await cursor.toArray();
@@ -52,13 +52,40 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await carCollection.findOne(query)
-      
-
       // const result = await cursor.toArray();
+      res.send(result);
+      
+    })
+
+    app.get('/cars/:brandName/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await carCollection.findOne(query);
       console.log(result);
-      console.log(id);
-      console.log(query);
-      // res.send(result);
+      res.send(result);
+    })
+    app.put('/cars/:brandName/:id', async(req, res) => {
+      try{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const options = {upsert: true};
+      const updatedCar = req.body;
+      const finalCar = {
+        $set: {
+          name: updatedCar.name,
+          brandName: updatedCar.brandName,
+          imgUrl: updatedCar.imgUrl,
+          price: updatedCar.price,
+          type: updatedCar.type,
+          description: updatedCar.description
+        }
+      }
+      const result = await carCollection.updateOne(filter, finalCar, options )
+      res.send(result);
+    }
+    catch(error){
+      res.send(error.message)
+    }
       
     })
 
